@@ -1,1 +1,67 @@
-Energy Bae is an AI-powered solar calculator Streamlit app that analyzes electricity bills to provide personalized solar energy recommendations. Users upload their electricity bill (PDF or image), and the app uses n8n workflow with Groq AI to extract billing details like monthly units consumed, bill amount, sanctioned load, and tariff category. The AI processes the bill data and recommends the optimal solar capacity (in kW) and number of solar panels needed to meet the customer's energy requirements. The app displays comprehensive results including daily average consumption, predicted next month's bill savings, and downloadable Excel reports. The entire workflow is automated through a webhook integration that communicates between the Streamlit frontend and n8n backend AI processing engine.
+ENERGY BAE - POINT BY POINT EXPLANATION
+========================================
+
+1. APPLICATION PURPOSE:
+   - AI-powered solar calculator that analyzes electricity bills
+   - Provides personalized solar energy recommendations
+   - Helps users determine if solar installation is viable
+
+2. USER INPUT & FILE UPLOAD:
+   - Users upload electricity bills in PDF or image format (PNG, JPG, JPEG)
+   - Supported file types: PDF, PNG, JPG, JPEG
+   - Bill can be from any electricity provider
+
+3. BACKEND PROCESSING:
+   - Streamlit frontend sends uploaded bill to n8n webhook
+   - n8n workflow processes the file using Groq AI (LLM)
+   - AI extracts structured data from the bill image/document
+
+4. DATA EXTRACTION:
+   - Customer name and consumer number
+   - Monthly units consumed (electricity usage)
+   - Total bill amount and unit cost (₹ per unit)
+   - Billing month/period and tariff category
+   - Sanctioned load (maximum connection capacity)
+   - Daily average consumption calculation
+
+5. AI RECOMMENDATIONS:
+   - Calculates optimal solar capacity in kW
+   - Recommends number of solar panels needed
+   - Analyzes consumption level and patterns
+   - Provides bill analysis and solar feasibility
+
+6. RESULTS DISPLAYED:
+   - Comprehensive metrics dashboard
+   - 9+ data points shown in columnar layout
+   - Consumption level assessment
+   - Bill savings prediction (predicted next month's bill)
+   - Daily average units breakdown
+
+7. REPORT GENERATION:
+   - Generates downloadable Excel report
+   - Contains all extracted data and recommendations
+   - Base64 encoded for secure download
+   - File name: solar_report.xlsx
+
+8. TECHNICAL ARCHITECTURE:
+   - Frontend: Streamlit (Python web framework)
+   - Backend: n8n (workflow automation platform)
+   - AI Engine: Groq API (large language model)
+   - Communication: Webhook integration via HTTP POST
+   - Timeout: 180 seconds for processing
+
+9. KEY FEATURES:
+   - Real-time processing with spinner animation
+   - Error handling for timeout and connection issues
+   - Raw API response viewer (for debugging)
+   - Customer detail display section
+   - Full JSON data viewer for advanced users
+
+10. WORKFLOW STEPS:
+    - Step 1: User uploads electricity bill
+    - Step 2: File sent to n8n webhook via HTTP POST
+    - Step 3: n8n extracts file content and passes to Groq API
+    - Step 4: Groq AI analyzes bill and returns JSON data
+    - Step 5: n8n processes and formats the response
+    - Step 6: Streamlit receives and displays results
+    - Step 7: User downloads Excel report (optional)
