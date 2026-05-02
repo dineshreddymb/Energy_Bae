@@ -1,10 +1,4 @@
 ENERGY BAE - SOLAR CALCULATOR
 
-Energy Bae is a Streamlit web app that analyzes electricity bills using AI to recommend solar installations.
-
-KEY POINTS:
-- Users upload electricity bills (PDF/Image)
-- Groq AI extracts 9+ data points from the bill
-- Displays: customer name, units consumed, bill amount, tariff, recommended solar capacity, panel count
-- Generates downloadable Excel reports
-- Powered by n8n workflow + Groq API backend
+How it works:
+User uploads an electricity bill (PDF or image) to the Streamlit app. The app sends the bill to n8n workflow which processes it using Groq AI. The AI extracts all billing information from the bill and analyzes the customer's electricity consumption. Based on the analysis, it calculates the recommended solar system capacity and number of panels needed. Results including customer details, monthly consumption, bill amount, and solar recommendations are displayed on the dashboard with an option to download a detailed Excel report.
