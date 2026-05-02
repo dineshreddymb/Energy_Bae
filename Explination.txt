@@ -1,4 +1,12 @@
 ENERGY BAE - SOLAR CALCULATOR
 
 How it works:
-User uploads an electricity bill (PDF or image) to the Streamlit app. The app sends the bill to n8n workflow which processes it using Groq AI. The AI extracts all billing information from the bill and analyzes the customer's electricity consumption. Based on the analysis, it calculates the recommended solar system capacity and number of panels needed. Results including customer details, monthly consumption, bill amount, and solar recommendations are displayed on the dashboard with an option to download a detailed Excel report.
+User uploads an electricity bill (PDF or image) to the Streamlit app. The app sends the bill to n8n workflow which processes it using Groq AI. The AI extracts all billing information and analyzes the customer's electricity consumption. Based on the analysis, it calculates the recommended solar system capacity and number of panels needed. Results are displayed on the dashboard with an option to download a detailed Excel report.
+
+KEY POINTS:
+- Users upload electricity bills in PDF or image format
+- Backend powered by n8n workflow + Groq AI
+- Extracts customer details, consumption data, and billing information
+- Calculates optimal solar capacity (kW) and recommended panel count
+- Provides bill analysis and savings predictions
+- Generates downloadable Excel reports with all recommendations
