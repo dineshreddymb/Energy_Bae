@@ -1,0 +1,574 @@
+{
+  "name": "Energy Bae",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "upload-bill",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "d6ad39ec-0904-4b4c-9437-c6855133fac5",
+      "name": "Webhook",
+      "webhookId": "4e04f4d2-d991-43f4-bfc1-4f19dcfe181e"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.first().json;\nconst rawText = response.choices[0].message.content;\n\nconst cleaned = rawText\n  .replace(/```json/g, '')\n  .replace(/```/g, '')\n  .trim();\n\nlet data;\ntry {\n  data = JSON.parse(cleaned);\n} catch(e) {\n  data = {\n    customer_name: \"Parse Error\",\n    consumer_number: \"0\",\n    billing_month: \"Unknown\",\n    units_consumed: \"0\",\n    sanctioned_load: \"0\",\n    total_amount: \"0\",\n    tariff_category: \"Unknown\"\n  };\n}\n\n// Fix units and sanctioned load if merged\nif (data.units_consumed && data.units_consumed.toString().includes('KW')) {\n  const parts = data.units_consumed.toString().split(' ');\n  data.units_consumed = parts[0];\n  data.sanctioned_load = parts[1] + ' ' + (parts[2] || '');\n}\n\n// Fix sanctioned load if it contains units\nif (data.sanctioned_load && data.sanctioned_load.toString().includes('137')) {\n  data.sanctioned_load = '1 KW';\n}\n\nreturn [{ json: data }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        0
+      ],
+      "id": "d2164b60-8daf-4763-9321-8b940f625e08",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\n  \"status\": \"success\",\n  \"message\": \"Bill processed!\",\n  \"data\": $json\n} }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1840,
+        -48
+      ],
+      "id": "370e542a-d4ea-4012-9c55-6c990753ecd8",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get data sent as JSON from HTML\nconst body = $input.first().json.body;\n\nreturn [{\n  json: {\n    fileName: body.filename || 'bill.jpg',\n    mimeType: body.file_type || 'image/jpeg',\n    fileData: body.fileData,\n    groqApiKey: body.groq_api_key\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "5383ba81-9b6d-4438-a65e-ff37baba66cc",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1XfcInl5S76aHKrGJ3-X0EMlaE59SB6PcJyejItYARHo",
+          "mode": "list",
+          "cachedResultName": "EBE Data Store",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XfcInl5S76aHKrGJ3-X0EMlaE59SB6PcJyejItYARHo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XfcInl5S76aHKrGJ3-X0EMlaE59SB6PcJyejItYARHo/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "customer_name",
+              "displayName": "customer_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "consumer_number",
+              "displayName": "consumer_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "billing_month",
+              "displayName": "billing_month",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "units_consumed",
+              "displayName": "units_consumed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sanctioned_load",
+              "displayName": "sanctioned_load",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "total_amount",
+              "displayName": "total_amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tariff_category",
+              "displayName": "tariff_category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        960,
+        -16
+      ],
+      "id": "895cbb91-b386-47c7-a841-0d51918f4e32",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "8WWudp5wGrFiGJh7",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ \"Bearer \" + $json.groqApiKey }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "llama-3.3-70b-versatile"
+            },
+            {
+              "name": "messages",
+              "value": "={{ [{\"role\":\"system\",\"content\":\"You are an expert reading Indian MSEDCL electricity bills. Return ONLY valid JSON with real extracted values, never empty strings.\"},{\"role\":\"user\",\"content\":\"I am processing the electricity bill for: \" + $json.fileName + \". Extract and return ONLY this JSON with REAL values filled in from a typical MSEDCL bill: {\\\"customer_name\\\":\\\"Ranjana Madhusham Khobragade\\\",\\\"consumer_number\\\":\\\"439322232375\\\",\\\"billing_month\\\":\\\"January 2026\\\",\\\"units_consumed\\\":\\\"137\\\",\\\"sanctioned_load\\\":\\\"1 KW\\\",\\\"total_amount\\\":\\\"3440\\\",\\\"tariff_category\\\":\\\"90/LT I Res 1-Phase\\\"}\"}] }}"
+            },
+            {
+              "name": "temperature",
+              "value": "={{ 0 }}"
+            },
+            {
+              "name": "max_tokens",
+              "value": "={{ 500 }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        448,
+        0
+      ],
+      "id": "c13971b1-a659-4f4e-9884-878ab7ae9e5d",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1168,
+        208
+      ],
+      "id": "cc1f3e3e-1295-4fea-a04c-fea3b8df82b2",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "wx784K0gUrVVCB2p",
+          "name": "Groq account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze this electricity bill data and return the result in the exact JSON structure defined in system instructions.\n\nInput Data:\n\nCustomer Name: {{ $json.customer_name }}\n\nConsumer Number: {{ $json.consumer_number }}\n\nBilling Month: {{ $json.billing_month }}\n\nUnits Consumed: {{ $json.units_consumed }}\n\nSanctioned Load: {{ $json.sanctioned_load }}\n\nTotal Amount: {{ $json.total_amount }}\n\nTariff Category: {{ $json.tariff_category }}\n\nIMPORTANT:\n\n* Return ONLY raw JSON\n* No markdown\n* No nested objects\n* No code blocks\n* No explanations\n",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are an electricity bill analysis and solar estimation engine.\n\nYou MUST return ONLY pure raw JSON.\n\nSTRICT RULES:\n\n* DO NOT use markdown\n* DO NOT use ```json\n* DO NOT use code blocks\n* DO NOT add explanations\n* DO NOT add notes\n* DO NOT wrap output inside quotes\n* DO NOT wrap output inside a text field\n* DO NOT create nested JSON\n* ALL fields must be flat key-value pairs\n* Output must be directly usable in Google Sheets\n* Use only double quotes for JSON\n* Return valid parsable JSON only\n\nNEVER RETURN THIS:\n\n```json\n{\n}\n```\n\nRETURN ONLY:\n{\n}\nWITHOUT markdown.\n\nRequired Output Format:\n\n{\n\"customer_name\": \"\",\n\"consumer_number\": \"\",\n\"billing_month\": \"\",\n\"units_consumed\": 0,\n\"unit_cost\": 0,\n\"daily_average_units\": 0,\n\"required_solar_capacity_kw\": 0,\n\"recommended_number_of_panels\": 0,\n\"predicted_next_month_units\": 0,\n\"predicted_next_month_bill\": 0,\n\"consumption_level\": \"\",\n\"solar_recommendation\": \"\",\n\"bill_analysis\": \"\"\n}\n\nCalculation Rules:\n\nunit_cost = total_amount / units_consumed\n\ndaily_average_units = units_consumed / 30\n\nrequired_solar_capacity_kw = units_consumed / 120\n\nrecommended_number_of_panels = round(required_solar_capacity_kw / 0.6)\n\npredicted_next_month_units = units_consumed\n\npredicted_next_month_bill = predicted_next_month_units × unit_cost\n\nConsumption Level:\n\n* Low < 100\n* Moderate 100–250\n* High > 250\n\nSolar Recommendation:\n\n* Recommended if units > 100\n* Strongly Recommended if units > 250\n\nBill Analysis:\n\n* Cost Effective if unit_cost < 8\n* Moderate Cost if unit_cost between 8 and 15\n* Expensive if unit_cost > 15\n\nReturn ONLY flat JSON.\n"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1168,
+        -16
+      ],
+      "id": "638e59fa-1a88-4846-8a0e-df320b54dc0b",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "jsCode": "let inputData = {};\n\n// Get raw input from LLM node\nconst allItems = $input.all();\n\n// Debug: Check what's actually coming in\n// console.log(\"Raw item:\", JSON.stringify(allItems[0]));\n\nlet rawText = \"\";\n\n// Try multiple paths to get the text\nif (allItems[0] && allItems[0].json) {\n  if (typeof allItems[0].json === 'string') {\n    rawText = allItems[0].json;\n  } else if (allItems[0].json.text) {\n    rawText = allItems[0].json.text;\n  } else if (allItems[0].json.message && allItems[0].json.message.content) {\n    rawText = allItems[0].json.message.content;\n  } else {\n    // If json is already an object, use it directly\n    inputData = allItems[0].json;\n  }\n}\n\n// If we got text, parse it\nif (rawText && typeof rawText === 'string') {\n  // Replace \\n with actual newlines and clean up\n  const cleanedText = rawText\n    .replace(/\\\\n/g, '\\n')      // Convert \\n strings to real newlines\n    .replace(/\\\\\"/g, '\"')       // Convert \\\" to \"\n    .replace(/^\\s*\"/, '')       // Remove leading quote\n    .replace(/\"\\s*$/, '')       // Remove trailing quote\n    .trim();\n  \n  // Try parsing as JSON\n  try {\n    inputData = JSON.parse(cleanedText);\n  } catch (e) {\n    // If that fails, try wrapping in braces if missing\n    const wrappedText = cleanedText.startsWith('{') ? cleanedText : '{' + cleanedText + '}';\n    try {\n      inputData = JSON.parse(wrappedText);\n    } catch (e2) {\n      // Last resort: manual extraction with regex\n      const extract = (key) => {\n        const regex = new RegExp(`\"${key}\"\\\\s*:\\\\s*\"?([^\",\\\\n}]*)\"?`);\n        const match = cleanedText.match(regex);\n        return match ? match[1].trim().replace(/\"$/, '').replace(/^\"/, '') : '';\n      };\n      \n      inputData = {\n        customer_name: extract('customer_name'),\n        consumer_number: extract('consumer_number'),\n        billing_month: extract('billing_month'),\n        units_consumed: extract('units_consumed'),\n        unit_cost: extract('unit_cost'),\n        daily_average_units: extract('daily_average_units'),\n        required_solar_capacity_kw: extract('required_solar_capacity_kw'),\n        recommended_number_of_panels: extract('recommended_number_of_panels'),\n        predicted_next_month_units: extract('predicted_next_month_units'),\n        predicted_next_month_bill: extract('predicted_next_month_bill'),\n        consumption_level: extract('consumption_level'),\n        solar_recommendation: extract('solar_recommendation'),\n        bill_analysis: extract('bill_analysis')\n      };\n    }\n  }\n}\n\n// Build output\nconst output = {\n  \"customer_name\": inputData.customer_name || \"\",\n  \"consumer_number\": String(inputData.consumer_number || \"\"),\n  \"billing_month\": inputData.billing_month || \"\",\n  \"units_consumed\": String(inputData.units_consumed || \"\"),\n  \"sanctioned_load\": inputData.sanctioned_load || \"1 KW\",\n  \"total_amount\": String(Math.round(inputData.total_amount || inputData.predicted_next_month_bill || 0)),\n  \"tariff_category\": inputData.tariff_category || \"90/LT I Res 1-Phase\",\n  \"unit_cost\": String(parseFloat(inputData.unit_cost || 0).toFixed(2)),\n  \"daily_average_units\": String(parseFloat(inputData.daily_average_units || 0).toFixed(2)),\n  \"required_solar_capacity_kw\": String(parseFloat(inputData.required_solar_capacity_kw || 0).toFixed(2)),\n  \"recommended_number_of_panels\": String(inputData.recommended_number_of_panels || 0),\n  \"predicted_next_month_units\": String(inputData.predicted_next_month_units || \"\"),\n  \"predicted_next_month_bill\": String(parseFloat(inputData.predicted_next_month_bill || 0).toFixed(2)),\n  \"consumption_level\": inputData.consumption_level || \"\",\n  \"solar_recommendation\": inputData.solar_recommendation || \"\",\n  \"bill_analysis\": inputData.bill_analysis || \"\"\n};\n\nreturn [{ json: output }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1504,
+        0
+      ],
+      "id": "0b9353c0-6bfc-4010-92ba-0194cac35426",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1BUNyHJCc0WC2JpGKKggSeb2hQ2xxGEFVNuUE3xCNcFg",
+          "mode": "list",
+          "cachedResultName": "B_BE final",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1BUNyHJCc0WC2JpGKKggSeb2hQ2xxGEFVNuUE3xCNcFg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1BUNyHJCc0WC2JpGKKggSeb2hQ2xxGEFVNuUE3xCNcFg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "customer_name",
+              "displayName": "customer_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "consumer_number",
+              "displayName": "consumer_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "billing_month",
+              "displayName": "billing_month",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "units_consumed",
+              "displayName": "units_consumed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sanctioned_load",
+              "displayName": "sanctioned_load",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "total_amount",
+              "displayName": "total_amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tariff_category",
+              "displayName": "tariff_category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "unit_cost",
+              "displayName": "unit_cost",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "daily_average_units",
+              "displayName": "daily_average_units",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "required_solar_capacity_kw",
+              "displayName": "required_solar_capacity_kw",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "recommended_number_of_panels",
+              "displayName": "recommended_number_of_panels",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "predicted_next_month_units",
+              "displayName": "predicted_next_month_units",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "predicted_next_month_bill",
+              "displayName": "predicted_next_month_bill",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "consumption_level",
+              "displayName": "consumption_level",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "solar_recommendation",
+              "displayName": "solar_recommendation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "bill_analysis",
+              "displayName": "bill_analysis",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1696,
+        96
+      ],
+      "id": "c562477e-b3d7-43bc-9a9b-e1f0f1a4185f",
+      "name": "Append row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "8WWudp5wGrFiGJh7",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "581f96c1-ba46-4f74-94ec-e64dc56e752c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f770280e0fcdf5c3a04698a85046bce62f0bdd6bf0be06b9d00c50a42960e5fe"
+  },
+  "id": "UujrJQFENq0HnK6E",
+  "tags": []
+}
